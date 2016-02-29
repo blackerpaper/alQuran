@@ -36,8 +36,15 @@ class AlQuran:
     def jumlahAyat(self, noSurat):
         return len(self.alQuran[noSurat - 1])
 
-    def jumlahKata(self, noSurat, noAyat):
-        return len(self.alQuran[noSurat - 1][noAyat - 1])
+    def jumlahKata(self, noSurat, noAyat=0):
+        jumlahKata = 0
+        if not noAyat:
+            for noAyat in range(1, self.jumlahAyat(noSurat) + 1):
+                jumlahKata = jumlahKata + self.jumlahKata(noSurat, noAyat)
+        else:
+            jumlahKata = len(self.alQuran[noSurat - 1][noAyat - 1])
+
+        return jumlahKata
 
     # Menghitung kemunculan kata didalam alQuran
     # Misal: hitung(u'الله') -> menghitung kemunculan kata الله
@@ -73,9 +80,46 @@ class AlQuran:
 
         return histogram
 
+    def tengahSurat(self, noSurat):
+        jumlahTengahKata = self.jumlahKata(noSurat) / 2
+
+        jumlahKata = 0
+        for noAyat in range(1, self.jumlahAyat(noSurat) + 1):
+            jumlahKataDalamAyat = self.jumlahKata(noSurat, noAyat)
+            jumlahKata = jumlahKata + jumlahKataDalamAyat
+            if jumlahKata >= jumlahTengahKata:
+                tengahKata = jumlahKataDalamAyat - (jumlahKata - jumlahTengahKata)
+                return self.ambil(noSurat, noAyat, tengahKata)
+
+    def terjemah(self, cari):
+        for surat in self.alQuran:
+            for ayat in surat:
+                for kata in ayat:
+                    if kata[0] == cari:
+                        return kata[2]
+
+    def maxAyat(self, noSurat):
+        return len(self.alQuran[noSurat - 1])
+
+
 
 alQuran = AlQuran()
-histogram = alQuran.histogram()
-histogramUrut = sorted(histogram.items(), key=operator.itemgetter(1))
-for el in histogramUrut:
-    print u'%s: %d' % (el[0], el[1])
+
+# histogram = alQuran.histogram(36, 37)
+# histogramUrut = sorted(histogram.items(), key=operator.itemgetter(1))
+# for el in histogramUrut:
+#     print u'%s: %d' % (el[0], el[1])
+
+# print(alQuran.tengahSurat(1))
+
+# print(alQuran.hitung(u'الله'))
+
+for i in range(1, 115):
+    sum = 0
+    histogram = alQuran.histogram(i, i+1)
+    histogramUrut = sorted(histogram.items(), key=operator.itemgetter(1))
+    for el in histogramUrut:
+        sum = sum + el[1]
+
+    hitung = alQuran.hitung(u'الله', i, i+1)
+    print u'%d:\t\t%d\t\t%d\t\t%.2f%%' % (i, sum, hitung, 100 * float(hitung) / float(sum))
