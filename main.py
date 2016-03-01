@@ -33,19 +33,6 @@ class AlQuran:
     def ambil(self, noSurat, noAyat, noKata):
         return self.alQuran[noSurat - 1][noAyat - 1][noKata - 1][0]
 
-    def jumlahAyat(self, noSurat):
-        return len(self.alQuran[noSurat - 1])
-
-    def jumlahKata(self, noSurat, noAyat=0):
-        jumlahKata = 0
-        if not noAyat:
-            for noAyat in range(1, self.jumlahAyat(noSurat) + 1):
-                jumlahKata = jumlahKata + self.jumlahKata(noSurat, noAyat)
-        else:
-            jumlahKata = len(self.alQuran[noSurat - 1][noAyat - 1])
-
-        return jumlahKata
-
     # Menghitung kemunculan kata didalam alQuran
     # Misal: hitung(u'الله') -> menghitung kemunculan kata الله
     def hitung(self, kata, dariNoSurat=0, keNoSurat=0):
@@ -98,12 +85,75 @@ class AlQuran:
                     if kata[0] == cari:
                         return kata[2]
 
-    def maxAyat(self, noSurat):
+    def jumlahSurat(self):
+        return len(self.alQuran)
+
+    def jumlahAyat(self, noSurat):
         return len(self.alQuran[noSurat - 1])
 
+    def jumlahKata(self, noSurat, noAyat=0):
+        jumlahKata = 0
+        if not noAyat:
+            for noAyat in range(1, self.jumlahAyat(noSurat) + 1):
+                jumlahKata = jumlahKata + self.jumlahKata(noSurat, noAyat)
+        else:
+            jumlahKata = len(self.alQuran[noSurat - 1][noAyat - 1])
+
+        return jumlahKata
+
+    def jumlahHuruf(self, noSurat, noAyat, noKata):
+        return len(self.alQuran[noSurat - 1][noAyat - 1][noKata - 1][0])
+
+    def cariTerjemah(self, kata):
+        ketemu = []
+        for noSurat in range(1, self.jumlahSurat() + 1):
+            for noAyat in range(1, self.jumlahAyat(noSurat) + 1):
+                for noKata in range(1, self.jumlahKata(noSurat, noAyat) + 1):
+                    if self.alQuran[noSurat - 1][noAyat - 1][noKata - 1][2].count(kata):
+                        ketemu.append((noSurat, noAyat, noKata))
+
+        return ketemu
+
+    def cariAkarKata(self, akarKata):
+        kelompok = []
+        for noSurat in range(1, self.jumlahSurat() + 1):
+            for noAyat in range(1, self.jumlahAyat(noSurat) + 1):
+                for noKata in range(1, self.jumlahKata(noSurat, noAyat) + 1):
+                    indeks = 0
+                    kata = self.ambil(noSurat, noAyat, noKata)
+                    for noHuruf in range(1, self.jumlahHuruf(noSurat, noAyat, noKata) + 1):
+                        if kata[noHuruf - 1].count(akarKata[indeks]):
+                            if indeks < len(akarKata):
+                                indeks = indeks + 1
+                                if indeks >= len(akarKata): break
+                            else:
+                                break
+                    if indeks == len(akarKata):
+                        kelompok.append((noSurat, noAyat, noKata))
+        return kelompok
 
 
 alQuran = AlQuran()
+
+histogram = {}
+kelompok = alQuran.cariAkarKata((u'ق', u'ل', u'ب'))
+for i in kelompok:
+    surat = i[0]
+    if not surat in histogram:
+        histogram[surat] = 1
+    else:
+        histogram[surat] = histogram[surat] + 1
+
+histogramUrut = sorted(histogram.items(), key=operator.itemgetter(1))
+for el in histogramUrut:
+    kemunculan = float(el[1]) / float(alQuran.jumlahAyat(el[0])) * 100
+    print u'%s:\t\t%d\t\t%.2f' % (el[0], el[1], kemunculan)
+
+
+
+# ketemu = alQuran.cariTerjemah(u"hati")
+# for i in ketemu:
+#     print u'%d:%d - %s' % (i[0], i[1], alQuran.ambil(i[0], i[1], i[2]))
 
 # histogram = alQuran.histogram(36, 37)
 # histogramUrut = sorted(histogram.items(), key=operator.itemgetter(1))
@@ -114,12 +164,12 @@ alQuran = AlQuran()
 
 # print(alQuran.hitung(u'الله'))
 
-for i in range(1, 115):
-    sum = 0
-    histogram = alQuran.histogram(i, i+1)
-    histogramUrut = sorted(histogram.items(), key=operator.itemgetter(1))
-    for el in histogramUrut:
-        sum = sum + el[1]
-
-    hitung = alQuran.hitung(u'الله', i, i+1)
-    print u'%d:\t\t%d\t\t%d\t\t%.2f%%' % (i, sum, hitung, 100 * float(hitung) / float(sum))
+# for i in range(1, 115):
+#     sum = 0
+#     histogram = alQuran.histogram(i, i+1)
+#     histogramUrut = sorted(histogram.items(), key=operator.itemgetter(1))
+#     for el in histogramUrut:
+#         sum = sum + el[1]
+#
+#     hitung = alQuran.hitung(u'الله', i, i+1)
+#     print u'%d:\t\t%d\t\t%d\t\t%.2f%%' % (i, sum, hitung, 100 * float(hitung) / float(sum))
